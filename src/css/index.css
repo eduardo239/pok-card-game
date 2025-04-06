@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+.card {
+  width: 100px;
+  height: 140px;
+  border-radius: 0.25rem;
+  border: 2px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: column;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 0.5rem;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  cursor: pointer;
+}
+
+.card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Suits */
+.hearts {
+  color: red;
+}
+
+.diamonds {
+  color: red;
+}
+
+.clubs {
+  color: black;
+}
+
+.spades {
+  color: black;
+}
