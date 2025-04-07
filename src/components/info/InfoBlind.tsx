@@ -13,7 +13,7 @@ export default function InfoBlind({
       <div className="text-4xl text-orange-400">
         Blind: {blinds[currentBlind].score}
       </div>
-      <div className="text-3xl text-green-400">Score: {score}</div>
+      <div className="text-2xl text-green-400">Score: {score}</div>
     </>
   );
 }

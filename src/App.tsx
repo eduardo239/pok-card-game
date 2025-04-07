@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ICard,
   drawCards,
@@ -27,6 +27,8 @@ import InfoCalc from "./components/info/InfoCalc";
 import InfoBlind from "./components/info/InfoBlind";
 import InfoOptions from "./components/info/InfoOptions";
 import InputBasic from "./components/form/InputBasic";
+import SelectedCardList from "./components/SelectedCardList";
+import { useToast } from "./context/ToastProvider";
 
 const defaultHandRank = {
   multiply: 0,
@@ -35,10 +37,16 @@ const defaultHandRank = {
   name: "",
 };
 
+const defaultHandSize = 8;
+const defaultHands = 10;
+const defaultDiscards = 10;
+
 export default function App() {
-  const [handSize, setHandSize] = useState<number>(10);
-  const [hands, setHands] = useState<number>(10);
-  const [discards, setDiscards] = useState<number>(10);
+  const { addToast } = useToast();
+  //
+  const [handSize, setHandSize] = useState<number>(defaultHandSize);
+  const [hands, setHands] = useState<number>(defaultHands);
+  const [discards, setDiscards] = useState<number>(defaultDiscards);
   //
   const [deck, setDeck] = useState<ICard[]>([]);
   const [userDeck, setUserDeck] = useState<ICard[]>([]);
@@ -53,62 +61,22 @@ export default function App() {
   const [currentBlind, setCurrentBlind] = useState(0);
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  useEffect(() => {
-    if (blinds[currentBlind].score < score) {
-      // next blind
-      setCurrentBlind(currentBlind + 1);
-      // reset score
-      setScore(0);
-      // reset game
-      setDeck(shuffleDeck(generateDeck()));
-      setSelectedCards([]);
-      setUserDeck([]);
-
-      setHandRank(defaultHandRank);
-      console.log("reset game");
-    }
-  }, [currentBlind, score, blinds, deck, handSize]);
-
-  useEffect(() => {
+  const reset = useCallback(() => {
+    // next blind
+    setCurrentBlind(currentBlind + 1);
+    // reset score
+    setScore(0);
+    // reset game
     setDeck(shuffleDeck(generateDeck()));
-  }, []);
+    setSelectedCards([]);
+    setUserDeck([]);
 
-  useEffect(() => {
-    const high = checkIfItsAHighCard(selectedCards);
-    const pair = checkPairAndScore(selectedCards);
-    const three = checkThreeOfAKindAndScore(selectedCards);
-    const four = checkFourOfAKindAndScore(selectedCards);
-    const twoPairs = checkIfHasTwoPairs(selectedCards);
-    const flush = checkIfItsAFlush(selectedCards);
-    const straight = checkIfItsAStraight(selectedCards);
-    const fullHouse = checkIfItsAFullHouse(selectedCards);
-    const straightFlush = checkIfItsAStraightFlush(selectedCards);
-    const royalFlush = checkIfItsARoyalFlush(selectedCards);
+    setHands(defaultHands);
+    setDiscards(defaultDiscards);
 
-    if (royalFlush) {
-      setHandRank(royalFlush);
-    } else if (straightFlush) {
-      setHandRank(straightFlush);
-    } else if (four) {
-      setHandRank(four);
-    } else if (fullHouse) {
-      setHandRank(fullHouse);
-    } else if (flush) {
-      setHandRank(flush);
-    } else if (straight) {
-      setHandRank(straight);
-    } else if (twoPairs) {
-      setHandRank(twoPairs);
-    } else if (three) {
-      setHandRank(three);
-    } else if (pair) {
-      setHandRank(pair);
-    } else if (high) {
-      setHandRank(high);
-    }
-  }, [selectedCards]);
-
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    setHandRank(defaultHandRank);
+    console.log("reset game");
+  }, [currentBlind]);
 
   const play = () => {
     if (selectedCards.length === 0) {
@@ -173,6 +141,54 @@ export default function App() {
   const draw = () => {
     setUserDeck(sortByRankThenSuit(drawCards(deck, handSize)));
   };
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  useEffect(() => {
+    if (blinds[currentBlind].score < score) {
+      addToast("You win!", "success");
+      reset();
+    }
+  }, [blinds, currentBlind, score, addToast, reset]);
+
+  useEffect(() => {
+    setDeck(shuffleDeck(generateDeck()));
+  }, []);
+
+  useEffect(() => {
+    const high = checkIfItsAHighCard(selectedCards);
+    const pair = checkPairAndScore(selectedCards);
+    const three = checkThreeOfAKindAndScore(selectedCards);
+    const four = checkFourOfAKindAndScore(selectedCards);
+    const twoPairs = checkIfHasTwoPairs(selectedCards);
+    const flush = checkIfItsAFlush(selectedCards);
+    const straight = checkIfItsAStraight(selectedCards);
+    const fullHouse = checkIfItsAFullHouse(selectedCards);
+    const straightFlush = checkIfItsAStraightFlush(selectedCards);
+    const royalFlush = checkIfItsARoyalFlush(selectedCards);
+
+    if (royalFlush) {
+      setHandRank(royalFlush);
+    } else if (straightFlush) {
+      setHandRank(straightFlush);
+    } else if (four) {
+      setHandRank(four);
+    } else if (fullHouse) {
+      setHandRank(fullHouse);
+    } else if (flush) {
+      setHandRank(flush);
+    } else if (straight) {
+      setHandRank(straight);
+    } else if (twoPairs) {
+      setHandRank(twoPairs);
+    } else if (three) {
+      setHandRank(three);
+    } else if (pair) {
+      setHandRank(pair);
+    } else if (high) {
+      setHandRank(high);
+    }
+  }, [selectedCards]);
+
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   return (
@@ -206,16 +222,19 @@ export default function App() {
           <hr className="border-t border-gray-600 my-4" />
 
           <InputBasic
+            label="Hands"
             value={hands}
             onChange={(e) => setHands(Number(e.target.value))}
           />
 
           <InputBasic
+            label="Discards"
             value={discards}
             onChange={(e) => setDiscards(Number(e.target.value))}
           />
 
           <InputBasic
+            label="Hand Size"
             value={handSize}
             onChange={(e) => setHandSize(Number(e.target.value))}
           />
@@ -225,23 +244,24 @@ export default function App() {
         <div className="col-span-3  min-h-screen p-4">
           {/*  */}
 
-          <CardList selectedCards={selectedCards} select={select} />
+          <SelectedCardList selectedCards={selectedCards} select={select} />
 
           {/*  */}
 
           <CardList
             disabled={selectedCards.length >= 5}
-            selectedCards={userDeck}
+            userDeck={userDeck}
+            selectedCards={selectedCards}
             select={select}
           />
 
           {/*  */}
-          <div className="bg-gray-800  p-4 flex flex-wrap  gap-1 justify-center items-center">
+          <div className="bg-gray-800 p-4 flex flex-wrap gap-1 items-center">
             <Button
               type="success"
               value={`play: ${hands}`}
               onClick={play}
-              disabled={hands <= 0}
+              disabled={hands <= 0 || userDeck.length === 0}
             />
 
             <Button type="warning" value="sort by suit" onClick={sortBySuit} />
@@ -256,7 +276,7 @@ export default function App() {
 
             <Button
               type="info"
-              value="draw"
+              value={currentBlind === 0 ? "start" : "next blind"}
               onClick={draw}
               disabled={deck.length !== 52}
             />
