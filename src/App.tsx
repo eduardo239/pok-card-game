@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { useToast } from "./context/ToastProvider";
+import { blindList } from "./helper/blind";
+
 import {
   ICard,
   drawCards,
@@ -7,7 +10,7 @@ import {
   sortByRankThenSuit,
   sortBySuitThenRank,
 } from "./helper";
-import Button from "./components/Button";
+
 import {
   checkIfItsAHighCard,
   checkIfItsAFlush,
@@ -21,14 +24,24 @@ import {
   checkThreeOfAKindAndScore,
   THandRank,
 } from "./helper/handrank";
+
 import CardList from "./components/CardList";
-import { blindList } from "./helper/blind";
 import InfoCalc from "./components/info/InfoCalc";
 import InfoBlind from "./components/info/InfoBlind";
 import InfoOptions from "./components/info/InfoOptions";
 import InputBasic from "./components/form/InputBasic";
 import SelectedCardList from "./components/SelectedCardList";
-import { useToast } from "./context/ToastProvider";
+import Modal from "./components/ui/Modal";
+import Button from "./components/Button";
+import Straight from "./components/handrank/Straight";
+import FullHouse from "./components/handrank/FullHouse";
+import Pair from "./components/handrank/Pair";
+import StraightFlush from "./components/handrank/StraightFlush";
+import HighCard from "./components/handrank/HighCard";
+import TwoPair from "./components/handrank/TwoPair";
+import ThreeOfAKind from "./components/handrank/ThreeOfAKind";
+import Flush from "./components/handrank/Flush";
+import FourOfAKind from "./components/handrank/FourOfAKind";
 
 const defaultHandRank = {
   multiply: 0,
@@ -59,6 +72,8 @@ export default function App() {
   const [score, setScore] = useState<number>(0);
   const [blinds] = useState(blindList);
   const [currentBlind, setCurrentBlind] = useState(0);
+  //
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   const reset = useCallback(() => {
@@ -238,6 +253,11 @@ export default function App() {
             value={handSize}
             onChange={(e) => setHandSize(Number(e.target.value))}
           />
+          <Button
+            type="info"
+            value="Run Info"
+            onClick={() => setIsModalOpen(true)}
+          />
         </div>
 
         {/* - - - - - - - - - - - - */}
@@ -264,8 +284,8 @@ export default function App() {
               disabled={hands <= 0 || userDeck.length === 0}
             />
 
-            <Button type="warning" value="sort by suit" onClick={sortBySuit} />
             <Button type="warning" value="sort by rank" onClick={sortByRank} />
+            <Button type="warning" value="sort by suit" onClick={sortBySuit} />
 
             <Button
               type="error"
@@ -285,6 +305,25 @@ export default function App() {
           {/* - - - - - - - - - - - - */}
         </div>
       </section>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <h2 className="text-xl font-semibold mb-4">HandRank</h2>
+        <p className="mb-4">
+          The hand rank is the best possible combination of cards in a hand.
+        </p>
+
+        <div className="flex flex-col gap-4 mb-4">
+          <StraightFlush />
+          <FourOfAKind />
+          <FullHouse />
+          <Flush />
+          <Straight />
+          <ThreeOfAKind />
+          <TwoPair />
+          <Pair />
+          <HighCard />
+        </div>
+      </Modal>
     </main>
   );
 }
