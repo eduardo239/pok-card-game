@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 type ToastType = "success" | "error" | "warning" | "info";
 
@@ -9,12 +9,12 @@ interface ToastProps {
   onClose?: () => void;
 }
 
-const Toast: React.FC<ToastProps> = ({
+const Toast = ({
   message,
   type = "info",
   duration = 3000,
   onClose,
-}) => {
+}: ToastProps) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {

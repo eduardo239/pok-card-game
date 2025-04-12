@@ -1,6 +1,10 @@
 import { THandRank } from "../../helper/handrank";
 
-export default function InfoCalc({ handRank }: { handRank: THandRank }) {
+interface InfoCalcProps {
+  handRank: THandRank;
+}
+
+export default function InfoCalc({ handRank }: InfoCalcProps) {
   return (
     <>
       <div>Handrank: {handRank.name}</div>

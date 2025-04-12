@@ -1,14 +1,16 @@
+interface ButtonProps {
+  value: string;
+  onClick: () => void;
+  type?: "error" | "success" | "warning" | "info";
+  disabled?: boolean;
+}
+
 export default function Button({
   value,
   onClick,
   type,
   disabled,
-}: {
-  onClick: () => void;
-  value: string;
-  type?: "error" | "success" | "warning" | "info";
-  disabled?: boolean;
-}) {
+}: ButtonProps) {
   return (
     <button
       disabled={disabled}

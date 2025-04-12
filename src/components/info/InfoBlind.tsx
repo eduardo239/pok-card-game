@@ -1,12 +1,14 @@
+interface InfoBlindProps {
+  blinds: { name: string; score: number }[];
+  currentBlind: number;
+  score: number;
+}
+
 export default function InfoBlind({
   blinds,
   currentBlind,
   score,
-}: {
-  blinds: { name: string; score: number }[];
-  currentBlind: number;
-  score: number;
-}) {
+}: InfoBlindProps) {
   return (
     <>
       <div>Name: {blinds[currentBlind].name}</div>

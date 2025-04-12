@@ -50,8 +50,8 @@ const defaultHandRank = {
   name: "",
 };
 
-const defaultHandSize = 8;
-const defaultHands = 10;
+const defaultHandSize = 20;
+const defaultHands = 1;
 const defaultDiscards = 10;
 
 export default function App() {
@@ -74,6 +74,7 @@ export default function App() {
   const [currentBlind, setCurrentBlind] = useState(0);
   //
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWon, setIsWon] = useState(false);
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   const reset = useCallback(() => {
@@ -95,14 +96,10 @@ export default function App() {
 
   const play = () => {
     if (selectedCards.length === 0) {
-      console.log("no cards selected");
+      addToast("Select at least one card", "warning");
       return;
     }
 
-    if (hands === 0) {
-      console.log("no more hands");
-      return;
-    }
     setScore(score + handRank.total);
     if (discards > 0) discard();
     setHands(hands - 1);
@@ -154,16 +151,34 @@ export default function App() {
   };
 
   const draw = () => {
+    setIsWon(false);
     setUserDeck(sortByRankThenSuit(drawCards(deck, handSize)));
   };
 
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  useEffect(() => {
+  const validateWin = useCallback(() => {
     if (blinds[currentBlind].score < score) {
-      addToast("You win!", "success");
+      addToast("You won!", "success");
+      setIsWon(true);
       reset();
     }
-  }, [blinds, currentBlind, score, addToast, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blinds, currentBlind, score, reset]);
+
+  const validateHands = useCallback(() => {
+    if (hands <= 0) {
+      addToast("No more hands", "warning");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hands]);
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  useEffect(() => {
+    validateWin();
+  }, [validateWin]);
+
+  useEffect(() => {
+    validateHands();
+  }, [validateHands]);
 
   useEffect(() => {
     setDeck(shuffleDeck(generateDeck()));
@@ -184,6 +199,7 @@ export default function App() {
     if (royalFlush) {
       setHandRank(royalFlush);
     } else if (straightFlush) {
+      console.log(straightFlush);
       setHandRank(straightFlush);
     } else if (four) {
       setHandRank(four);
@@ -281,7 +297,7 @@ export default function App() {
               type="success"
               value={`play: ${hands}`}
               onClick={play}
-              disabled={hands <= 0 || userDeck.length === 0}
+              disabled={hands <= 0 || userDeck.length === 0 || isWon}
             />
 
             <Button type="warning" value="sort by rank" onClick={sortByRank} />

@@ -370,6 +370,7 @@ export const checkIfItsAStraightFlush = (selectedCards: ICard[]): THR => {
 
   for (const card of selectedCards) {
     const rank = valueToRank[card.value];
+
     if (!suitGroups[card.suit]) {
       suitGroups[card.suit] = [];
     }

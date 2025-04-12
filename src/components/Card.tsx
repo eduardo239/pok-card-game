@@ -1,17 +1,13 @@
 import { ICard } from "../helper";
 
-export default function Card({
-  card,
-  onClick,
-  disabled,
-  selected,
-}: {
+interface CardProps {
   card: ICard;
   onClick: () => void;
   disabled?: boolean;
-  userDeck?: ICard[];
   selected?: boolean;
-}) {
+}
+
+export default function Card({ card, onClick, disabled, selected }: CardProps) {
   return (
     <div
       onClick={disabled ? undefined : onClick}
