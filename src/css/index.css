@@ -26,17 +26,17 @@
 
 /* Suits */
 .hearts {
-  color: red;
+  color: #fa3737;
 }
 
 .diamonds {
-  color: red;
+  color: #fa3737;
 }
 
 .clubs {
-  color: black;
+  color: #353535;
 }
 
 .spades {
-  color: black;
+  color: #353535;
 }

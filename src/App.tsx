@@ -11,20 +11,6 @@ import {
   sortBySuitThenRank,
 } from "./helper";
 
-import {
-  checkIfItsAHighCard,
-  checkIfItsAFlush,
-  checkIfItsAFullHouse,
-  checkIfItsARoyalFlush,
-  checkIfItsAStraightFlush,
-  checkFourOfAKindAndScore,
-  checkIfHasTwoPairs,
-  checkIfItsAStraight,
-  checkPairAndScore,
-  checkThreeOfAKindAndScore,
-  THandRank,
-} from "./helper/handrank";
-
 import CardList from "./components/CardList";
 import InfoCalc from "./components/info/InfoCalc";
 import InfoBlind from "./components/info/InfoBlind";
@@ -36,12 +22,22 @@ import Button from "./components/Button";
 import Straight from "./components/handrank/Straight";
 import FullHouse from "./components/handrank/FullHouse";
 import Pair from "./components/handrank/Pair";
-import StraightFlush from "./components/handrank/StraightFlush";
 import HighCard from "./components/handrank/HighCard";
 import TwoPair from "./components/handrank/TwoPair";
 import ThreeOfAKind from "./components/handrank/ThreeOfAKind";
 import Flush from "./components/handrank/Flush";
 import FourOfAKind from "./components/handrank/FourOfAKind";
+import Divider from "./components/ui/Divider";
+
+import {
+  evaluatePair,
+  evaluateThreeOfAKind,
+  evaluateFourOfAKind,
+  evaluateFlush,
+  evaluateStraightFlush,
+  evaluateTwoPair,
+  evaluateFullHouse,
+} from "./helper/handrank";
 
 const defaultHandRank = {
   multiply: 0,
@@ -50,7 +46,13 @@ const defaultHandRank = {
   name: "",
 };
 
-const defaultHandSize = 20;
+interface IResult {
+  multiply: number;
+  chips: number;
+  total: number;
+  name: string;
+}
+const defaultHandSize = 50;
 const defaultHands = 1;
 const defaultDiscards = 10;
 
@@ -65,7 +67,7 @@ export default function App() {
   const [userDeck, setUserDeck] = useState<ICard[]>([]);
   const [selectedCards, setSelectedCards] = useState<ICard[]>([]);
   //
-  const [handRank, setHandRank] = useState<THandRank>(defaultHandRank);
+  const [handRank, setHandRank] = useState<IResult>(defaultHandRank);
   const [sortedBy, setSortedBy] = useState<"rank" | "suit">("rank");
   //
 
@@ -138,16 +140,16 @@ export default function App() {
     }
   };
 
-  const sortByRank = () => {
-    setSortedBy("rank");
-    setUserDeck(sortByRankThenSuit(userDeck));
-    setSelectedCards(sortByRankThenSuit(selectedCards));
-  };
-
-  const sortBySuit = () => {
-    setSortedBy("suit");
-    setUserDeck(sortBySuitThenRank(userDeck));
-    setSelectedCards(sortBySuitThenRank(selectedCards));
+  const sort = (by: "rank" | "suit") => {
+    if (by === "rank") {
+      setSortedBy("rank");
+      setUserDeck(sortByRankThenSuit(userDeck));
+      setSelectedCards(sortByRankThenSuit(selectedCards));
+    } else if (by === "suit") {
+      setSortedBy("suit");
+      setUserDeck(sortBySuitThenRank(userDeck));
+      setSelectedCards(sortBySuitThenRank(selectedCards));
+    }
   };
 
   const draw = () => {
@@ -164,42 +166,29 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blinds, currentBlind, score, reset]);
 
-  const validateHands = useCallback(() => {
-    if (hands <= 0) {
-      addToast("No more hands", "warning");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hands]);
-
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   useEffect(() => {
     validateWin();
   }, [validateWin]);
 
   useEffect(() => {
-    validateHands();
-  }, [validateHands]);
-
-  useEffect(() => {
     setDeck(shuffleDeck(generateDeck()));
   }, []);
 
   useEffect(() => {
-    const high = checkIfItsAHighCard(selectedCards);
-    const pair = checkPairAndScore(selectedCards);
-    const three = checkThreeOfAKindAndScore(selectedCards);
-    const four = checkFourOfAKindAndScore(selectedCards);
-    const twoPairs = checkIfHasTwoPairs(selectedCards);
-    const flush = checkIfItsAFlush(selectedCards);
-    const straight = checkIfItsAStraight(selectedCards);
-    const fullHouse = checkIfItsAFullHouse(selectedCards);
-    const straightFlush = checkIfItsAStraightFlush(selectedCards);
-    const royalFlush = checkIfItsARoyalFlush(selectedCards);
+    // const high = evaluateHighCard(selectedCards);
+    const high = null;
+    const pair = evaluatePair(selectedCards);
+    const three = evaluateThreeOfAKind(selectedCards);
+    const four = evaluateFourOfAKind(selectedCards);
+    const twoPairs = evaluateTwoPair(selectedCards);
+    const flush = evaluateFlush(selectedCards);
+    // const straight = evaluateStraight(selectedCards);
+    const straight = null;
+    const fullHouse = evaluateFullHouse(selectedCards);
+    const straightFlush = evaluateStraightFlush(selectedCards);
 
-    if (royalFlush) {
-      setHandRank(royalFlush);
-    } else if (straightFlush) {
-      console.log(straightFlush);
+    if (straightFlush) {
       setHandRank(straightFlush);
     } else if (four) {
       setHandRank(four);
@@ -224,13 +213,13 @@ export default function App() {
 
   return (
     <main className="text-white bg-gray-800 min-h-screen border-4 border-gray-700">
-      <section className="grid grid-cols-4 ">
+      <section className="grid grid-cols-4">
         {/* - - - - - - - - - - - - */}
 
         <div className="bg-gray-800 p-4 border-r border-r-gray-700 font-mono text-lg">
           <div>Deck: {deck.length}</div>
 
-          <hr className="border-t border-gray-600 my-4 " />
+          <Divider />
 
           <InfoCalc handRank={handRank} />
 
@@ -242,15 +231,15 @@ export default function App() {
             score={score}
           />
 
-          <hr className="border-t border-gray-600 my-4" />
+          <Divider />
 
           <InfoOptions hands={hands} discards={discards} />
 
-          <hr className="border-t border-gray-600 my-4" />
+          <Divider />
 
           <div>Number of Cards: {handSize}</div>
 
-          <hr className="border-t border-gray-600 my-4" />
+          <Divider />
 
           <InputBasic
             label="Hands"
@@ -300,8 +289,16 @@ export default function App() {
               disabled={hands <= 0 || userDeck.length === 0 || isWon}
             />
 
-            <Button type="warning" value="sort by rank" onClick={sortByRank} />
-            <Button type="warning" value="sort by suit" onClick={sortBySuit} />
+            <Button
+              type="warning"
+              value="sort by rank"
+              onClick={() => sort("rank")}
+            />
+            <Button
+              type="warning"
+              value="sort by suit"
+              onClick={() => sort("suit")}
+            />
 
             <Button
               type="error"
@@ -329,7 +326,6 @@ export default function App() {
         </p>
 
         <div className="flex flex-col gap-4 mb-4">
-          <StraightFlush />
           <FourOfAKind />
           <FullHouse />
           <Flush />
