@@ -148,6 +148,30 @@ export function evaluateFlush(cards: ICard[]): IResult | null {
   return null;
 }
 
+export function evaluateStraight(cards: ICard[]): IResult | null {
+  if (cards.length !== 5) return null;
+
+  const sorted = [...cards].map((card) => card.value).sort((a, b) => a - b);
+
+  const isSequential = sorted.every((rank, i, arr) => {
+    if (i === 0) return true;
+    return rank === arr[i - 1] + 1;
+  });
+
+  if (!isSequential) return null;
+
+  const total =
+    cards.reduce((sum, card) => sum + card.value, 0) +
+    TABLE.straight.chips * TABLE.straight.multiply;
+
+  return {
+    name: "Straight",
+    total,
+    chips: TABLE.straight.chips,
+    multiply: TABLE.straight.multiply,
+  };
+}
+
 export function evaluateStraightFlush(cards: ICard[]): IResult | null {
   if (cards.length !== 5) return null;
 
@@ -242,4 +266,21 @@ export function evaluateFullHouse(cards: ICard[]): IResult | null {
   }
 
   return null;
+}
+
+export function evaluateHighCard(cards: ICard[]): IResult | null {
+  if (cards.length === 0 || cards.length > 5) return null;
+
+  const highestCard = cards.reduce((max, card) =>
+    card.value > max.value ? card : max
+  );
+
+  const total = highestCard.value + TABLE.high.chips * TABLE.high.multiply;
+
+  return {
+    name: "High Card",
+    total,
+    chips: TABLE.high.chips,
+    multiply: TABLE.high.multiply,
+  };
 }

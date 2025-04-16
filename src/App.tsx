@@ -30,6 +30,7 @@ import FourOfAKind from "./components/handrank/FourOfAKind";
 import Divider from "./components/ui/Divider";
 
 import {
+  evaluateHighCard,
   evaluatePair,
   evaluateThreeOfAKind,
   evaluateFourOfAKind,
@@ -37,6 +38,7 @@ import {
   evaluateStraightFlush,
   evaluateTwoPair,
   evaluateFullHouse,
+  evaluateStraight,
 } from "./helper/handrank";
 
 const defaultHandRank = {
@@ -176,15 +178,13 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // const high = evaluateHighCard(selectedCards);
-    const high = null;
+    const high = evaluateHighCard(selectedCards);
     const pair = evaluatePair(selectedCards);
     const three = evaluateThreeOfAKind(selectedCards);
     const four = evaluateFourOfAKind(selectedCards);
     const twoPairs = evaluateTwoPair(selectedCards);
     const flush = evaluateFlush(selectedCards);
-    // const straight = evaluateStraight(selectedCards);
-    const straight = null;
+    const straight = evaluateStraight(selectedCards);
     const fullHouse = evaluateFullHouse(selectedCards);
     const straightFlush = evaluateStraightFlush(selectedCards);
 
